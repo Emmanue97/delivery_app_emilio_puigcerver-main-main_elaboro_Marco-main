@@ -1,0 +1,42 @@
+name: delivery_app_emilio_puigcerver
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.5.1 <4.0.0" # Compatible con Dart 3.5.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Dependencias actualizadas manualmente
+  cupertino_icons: ^1.0.8 # Última versión estable y compatible
+  provider: ^6.1.2        # Versión compatible con tu configuración
+  collection: ^1.17.1     # Compatible con Dart 3
+  flutter_credit_card: ^3.0.2 # Última versión compatible con null safety
+  intl: ^0.20.0
+  firebase_core: ^3.3.0
+  firebase_auth: ^5.3.0
+  cloud_firestore: ^5.4.0
+  google_sign_in: ^5.3.0
+  shared_preferences: ^2.3.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^1.0.0   # Versión compatible
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - lib/images/burgers/
+    - lib/images/sides/
+    - lib/images/salads/
+    - lib/images/drinks/
+    - lib/images/desserts/
+    - lib/assets/onboarding1.png
+    - lib/assets/onboarding2.png
+    - lib/assets/onboarding3.png

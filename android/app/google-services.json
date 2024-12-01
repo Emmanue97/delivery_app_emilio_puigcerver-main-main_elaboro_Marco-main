@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "178361432512",
+    "project_id": "fooddelivery-f3e81",
+    "storage_bucket": "fooddelivery-f3e81.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:178361432512:android:974725d1638fdd51a57025",
+        "android_client_info": {
+          "package_name": "com.fooddelivery.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "178361432512-bul1ik4fjb8c4s0l8bmeu0pcd7j594qo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKpWC7dIaXpp8ImqPHqXSQ4vYTOSFEmqw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "178361432512-bul1ik4fjb8c4s0l8bmeu0pcd7j594qo.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "178361432512-sjkgpgp85bkal9vu438p7poakail6r2g.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.deliveryAppEmilioPuigcerver"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
