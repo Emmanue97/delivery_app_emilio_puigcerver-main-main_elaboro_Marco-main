@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';  // Importar fl_chart
 
 class ExpenseBalancePage extends StatefulWidget {
   final String groupId;
@@ -12,6 +13,7 @@ class ExpenseBalancePage extends StatefulWidget {
 
 class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
   List<Map<String, dynamic>> memberBalances = [];
+  List<Map<String, dynamic>> categoryExpenses = [];  // Lista para almacenar los gastos por categoría
   double totalExpenses = 0;
   double totalSalaries = 0;
 
@@ -19,6 +21,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
   void initState() {
     super.initState();
     _calculateMemberBalances();
+    _getCategoryExpenses();  // Obtener los gastos por categoría
   }
 
   Future<void> _calculateMemberBalances() async {
@@ -54,6 +57,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
         double salary = memberData['salary'] as double;
         double proportion = salary / totalSalaries;
         double shouldPay = totalExpenses * proportion;
+        shouldPay = shouldPay.isNaN || shouldPay.isNegative ? 0 : shouldPay;
 
         balances.add({
           'id': member.id,
@@ -67,30 +71,6 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
       setState(() {
         memberBalances = balances;
       });
-
-      // Solo guardamos en Firestore si tenemos un groupId válido
-      if (widget.groupId.isNotEmpty) {
-        final balanceData = {
-          'updated_at': FieldValue.serverTimestamp(),
-          'total_expenses': totalExpenses,
-          'total_salaries': totalSalaries,
-          'member_balances': balances.map((b) => {
-            'id': b['id'],
-            'name': b['name'],
-            'salary': b['salary'],
-            'proportion': b['proportion'],
-            'shouldPay': b['shouldPay'],
-            'timestamp': FieldValue.serverTimestamp(),
-          }).toList(),
-        };
-
-        // Usar el groupId como identificador del documento
-        await FirebaseFirestore.instance
-            .collection('balances')
-            .doc(widget.groupId)
-            .set(balanceData);
-      }
-
     } catch (e) {
       print('Error al calcular balances: $e');
       ScaffoldMessenger.of(context).showSnackBar(
@@ -98,6 +78,82 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
       );
     }
   }
+
+  // Obtener los gastos por categoría
+  Future<void> _getCategoryExpenses() async {
+    try {
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+
+      // Obtener los gastos dentro del mes seleccionado
+      QuerySnapshot expensesSnapshot = await FirebaseFirestore.instance
+          .collection('expenses')
+          .where('group_id', isEqualTo: widget.groupId)
+          .where('date', isGreaterThanOrEqualTo: firstDayOfMonth)
+          .where('date', isLessThanOrEqualTo: lastDayOfMonth)
+          .get();
+
+      // Agrupar los gastos por categoría
+      Map<String, double> categoryTotals = {};
+      for (var expense in expensesSnapshot.docs) {
+        final data = expense.data() as Map<String, dynamic>;
+        final category = data['category'] ?? 'Sin categoría'; // Obtener categoría
+        final amount = data['amount'] ?? 0.0; // Obtener cantidad gastada
+
+        categoryTotals[category] = (categoryTotals[category] ?? 0) + amount;
+      }
+
+      // Convertir los datos de categorías a una lista
+      setState(() {
+        categoryExpenses = categoryTotals.entries
+            .map((entry) => {'category': entry.key, 'total': entry.value})
+            .toList();
+      });
+    } catch (e) {
+      print('Error al obtener gastos por categoría: $e');
+    }
+  }
+
+  // Función para crear el gráfico de pastel para salarios vs lo que deben pagar
+  Widget _buildSalaryVsPayPieChart() {
+  return SizedBox(
+    height: 250,  // Ajusta la altura del gráfico según necesites
+    child: PieChart(
+      PieChartData(
+        sectionsSpace: 0,  // Espacio entre las secciones del pastel
+        centerSpaceRadius: 40,  // Radio del espacio central, para mayor claridad
+        sections: memberBalances.map((member) {
+          double salary = member['salary'];
+          double shouldPay = member['shouldPay'];
+
+          return PieChartSectionData(
+            value: salary,  // Este valor representa el salario
+            color: Colors.green,  // Color verde para el salario
+            title: '${member['name']} - \$${salary.toStringAsFixed(2)}',
+            radius: 50,  // Tamaño del círculo
+            showTitle: true,
+            titleStyle: const TextStyle(fontSize: 10, color: Colors.white),
+          );
+        }).toList()
+          ..addAll(memberBalances.map((member) {
+            double salary = member['salary'];
+            double shouldPay = member['shouldPay'];
+
+            return PieChartSectionData(
+              value: shouldPay,  // Este valor representa lo que deben pagar
+              color: Colors.red,  // Color rojo para lo que deben pagar
+              title: '${member['name']} - \$${shouldPay.toStringAsFixed(2)}',
+              radius: 50,  // Tamaño del círculo
+              showTitle: true,
+              titleStyle: const TextStyle(fontSize: 10, color: Colors.white),
+            );
+          }).toList()),
+      ),
+    ),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +171,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
         ),
         body: TabBarView(
           children: [
-            // Pestaña de Resumen
+            // Pestaña de Resumen con gráficos
             SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Card(
@@ -138,40 +194,65 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
                       ),
                       const SizedBox(height: 8),
                       ...memberBalances.map((member) => _buildInfoRow(
-                        '${member['name']}:',
-                        '${(member['proportion'] * 100).toStringAsFixed(1)}%'
-                      )).toList(),
+                          '${member['name']}:',
+                          '${(member['proportion'] * 100).toStringAsFixed(1)}%' // Mostrar proporción como porcentaje
+                          )).toList(),
+
+                      // Aquí agregamos el gráfico de distribución de gastos por miembro
+                      const SizedBox(height: 16),
+                      const Text('Distribución de Gastos por Miembro', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      _buildExpenseDistributionChart(),
+
+                      // Aquí agregamos el gráfico de distribución de gastos por categoría
+                      const SizedBox(height: 16),
+                      const Text('Distribución Mensual de Gastos por Categoría', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 8),
+                      _buildCategoryExpenseChart(),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // Pestaña de Balances
-            ListView.builder(
+            // Pestaña de Balances con gráfico de pastel
+            SingleChildScrollView(
               padding: const EdgeInsets.all(8.0),
-              itemCount: memberBalances.length,
-              itemBuilder: (context, index) {
-                final balance = memberBalances[index];
-                return Card(
-                  child: ListTile(
-                    title: Text(balance['name']),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Salario: \$${balance['salary'].toStringAsFixed(2)}'),
-                        Text(
-                          'Debe pagar: \$${balance['shouldPay'].toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Distribución de Salarios y Pagos', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  _buildSalaryVsPayPieChart(),  // Este es el gráfico de pastel
+
+                  ListView.builder(
+                    shrinkWrap: true,  // Para que la lista no ocupe todo el espacio disponible
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: memberBalances.length,
+                    itemBuilder: (context, index) {
+                      final balance = memberBalances[index];
+                      return Card(
+                        child: ListTile(
+                          title: Text(balance['name']),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Salario: \$${balance['salary'].toStringAsFixed(2)}'),
+                              Text(
+                                'Debe pagar: \$${balance['shouldPay'].toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ],
         ),
@@ -193,7 +274,107 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
           Text(label),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],
-     ),
-);
+      ),
+    );
+  }
+
+  // Función para crear el gráfico de distribución de gastos por miembro
+  Widget _buildExpenseDistributionChart() {
+    return SizedBox(
+      height: 250,  // Ajusta la altura del gráfico según necesites
+      child: BarChart(
+        BarChartData(
+          titlesData: FlTitlesData(show: true,
+          bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (double value, TitleMeta meta) {
+                  int index = value.toInt();
+                  if (index < 0 || index >= memberBalances.length) {
+                    return const Text('');
+                  }
+                  final member = memberBalances[index];
+                  return Text(
+                    member['name'], // Mostrar nombre del miembro
+                    style: const TextStyle(fontSize: 10),
+                  );
+                },
+              ),
+            ),
+          ),
+          gridData: FlGridData(show: true),
+          borderData: FlBorderData(show: true),
+          barGroups: memberBalances.asMap().entries.map((entry) {
+            int index = entry.key;
+            Map<String, dynamic> member = entry.value;
+
+            return BarChartGroupData(
+              x: index,  // Usar el índice como identificador único
+              barRods: [
+                BarChartRodData(
+                  toY: member['proportion'] * 100,  // Proporción como porcentaje
+                  color: Colors.red,  // Cambia el color si es necesario
+                  width: 15,
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  // Función para crear el gráfico de distribución mensual de gastos por categoría
+  Widget _buildCategoryExpenseChart() {
+  return SizedBox(
+    height: 250, // Ajusta la altura del gráfico según lo necesites
+    child: BarChart(
+      BarChartData(
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (double value, TitleMeta meta) {
+                switch (value.toInt()) {
+                  case 0:
+                    return const Text('Gastos', style: TextStyle(fontSize: 12));
+                  case 1:
+                    return const Text('Salarios', style: TextStyle(fontSize: 12));
+                  default:
+                    return const Text('');
+                }
+              },
+            ),
+          ),
+        ),
+        gridData: FlGridData(show: true),
+        borderData: FlBorderData(show: true),
+        barGroups: [
+          BarChartGroupData(
+            x: 0, // Índice para la barra de Gastos
+            barRods: [
+              BarChartRodData(
+                toY: totalExpenses, // Valor total de gastos
+                color: Colors.red, // Color rojo para gastos
+                width: 15,
+              ),
+            ],
+          ),
+          BarChartGroupData(
+            x: 1, // Índice para la barra de Salarios
+            barRods: [
+              BarChartRodData(
+                toY: totalSalaries, // Valor total de salarios
+                color: Colors.green, // Color verde para salarios
+                width: 15,
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
 }
+
 }
