@@ -129,7 +129,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
 
           return PieChartSectionData(
             value: salary,  // Este valor representa el salario
-            color: Colors.green,  // Color verde para el salario
+            color: Color.fromARGB(160, 169, 169, 169),  // Color verde para el salario
             title: '${member['name']} - \$${salary.toStringAsFixed(2)}',
             radius: 50,  // Tamaño del círculo
             showTitle: true,
@@ -142,7 +142,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
 
             return PieChartSectionData(
               value: shouldPay,  // Este valor representa lo que deben pagar
-              color: Colors.red,  // Color rojo para lo que deben pagar
+              color: Colors.blue.shade900,  // Color rojo para lo que deben pagar
               title: '${member['name']} - \$${shouldPay.toStringAsFixed(2)}',
               radius: 50,  // Tamaño del círculo
               showTitle: true,
@@ -216,44 +216,59 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
             ),
 
             // Pestaña de Balances con gráfico de pastel
-            SingleChildScrollView(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
+SingleChildScrollView(
+  padding: const EdgeInsets.all(8.0),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Distribución de Salarios y Pagos',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      ),
+      const SizedBox(height: 16),
+      _buildSalaryVsPayPieChart(), // Este es el gráfico de pastel
+      const SizedBox(height: 16),
+      const Text(
+        'Detalles de Balances por Miembro',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      ),
+      const SizedBox(height: 8),
+      // Lista de miembros y sus balances
+      ListView.builder(
+        shrinkWrap: true, // Para que la lista no ocupe todo el espacio disponible
+        physics: const NeverScrollableScrollPhysics(), // Desactivar el desplazamiento para evitar conflicto con SingleChildScrollView
+        itemCount: memberBalances.length,
+        itemBuilder: (context, index) {
+          final balance = memberBalances[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            child: ListTile(
+              title: Text(
+                balance['name'],
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Distribución de Salarios y Pagos', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  _buildSalaryVsPayPieChart(),  // Este es el gráfico de pastel
-
-                  ListView.builder(
-                    shrinkWrap: true,  // Para que la lista no ocupe todo el espacio disponible
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: memberBalances.length,
-                    itemBuilder: (context, index) {
-                      final balance = memberBalances[index];
-                      return Card(
-                        child: ListTile(
-                          title: Text(balance['name']),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Salario: \$${balance['salary'].toStringAsFixed(2)}'),
-                              Text(
-                                'Debe pagar: \$${balance['shouldPay'].toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.red,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                  Text('Salario: \$${balance['salary'].toStringAsFixed(2)}'),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Debe pagar: \$${balance['shouldPay'].toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
                   ),
                 ],
               ),
             ),
+          );
+        },
+      ),
+    ],
+  ),
+),
+
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -313,7 +328,7 @@ class _ExpenseBalancePageState extends State<ExpenseBalancePage> {
               barRods: [
                 BarChartRodData(
                   toY: member['proportion'] * 100,  // Proporción como porcentaje
-                  color: Colors.red,  // Cambia el color si es necesario
+                  color: Colors.blue,  // Cambia el color si es necesario
                   width: 15,
                 ),
               ],
