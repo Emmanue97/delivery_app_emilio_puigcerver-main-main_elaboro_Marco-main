@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class AddMemberPage extends StatefulWidget {
   final String groupId;
@@ -15,7 +16,6 @@ class _AddMemberPageState extends State<AddMemberPage> {
   final TextEditingController _salaryController = TextEditingController();
   final TextEditingController _userIdController = TextEditingController();
 
-  // Función para agregar un miembro a Firestore
   Future<void> _addMember() async {
     if (_nameController.text.isEmpty ||
         _salaryController.text.isEmpty ||
@@ -27,19 +27,25 @@ class _AddMemberPageState extends State<AddMemberPage> {
     }
 
     try {
-      // Agregar miembro al grupo en la colección 'users'
       await FirebaseFirestore.instance.collection('member').add({
         'group_id': widget.groupId,
         'name': _nameController.text,
         'salary': double.parse(_salaryController.text),
         'user_id': _userIdController.text,
       });
-
-      // Mensaje de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Miembro agregado exitosamente')),
-      );
-
+        UnityAds.showVideoAd(
+          placementId: 'Rewarded_Android',
+          onStart: (placementId) => print('Ad Started: $placementId'),
+          onClick: (placementId) => print('Ad Clicked: $placementId'),
+          onSkipped: (placementId) => print('Ad Skipped: $placementId'),
+          onComplete: (placementId) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Miembro agregado exitosamente')),
+            ); // Solo navega después del anuncio
+          },
+          onFailed: (placementId, error, message) =>
+              print('Ad Failed: $placementId, $error, $message'),
+        );
       // Regresar a la pantalla anterior
       Navigator.pop(context);
     } catch (e) {
@@ -81,7 +87,7 @@ class _AddMemberPageState extends State<AddMemberPage> {
             ),
           ],
         ),
-     ),
-);
-}
+      ),
+    );
+  }
 }

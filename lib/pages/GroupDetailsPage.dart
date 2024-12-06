@@ -1,9 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/AddPaymentMethodPage.dart';
-import 'package:delivery_app_emilio_puigcerver/pages/expense_balance_page.dart';
 import 'package:flutter/material.dart';
 import 'add_member_page.dart';
 import 'add_expense_page.dart';
+import 'package:delivery_app_emilio_puigcerver/pages/premium_feature_screen.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class GroupDetailsPage extends StatefulWidget {
   final String groupName;
@@ -27,8 +28,17 @@ class _GroupDetailsPageState extends State<GroupDetailsPage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-  }
 
+    loadAd();
+  }
+  void loadAd() {
+    UnityAds.load(
+      placementId: 'Rewarded_Android', // El ID de tu anuncio
+      onComplete: (placementId) => print('Ad Loaded: $placementId'),
+      onFailed: (placementId, error, message) =>
+          print('Ad Failed to Load: $placementId, $error, $message'),
+    );
+  }
   @override
   void dispose() {
     _tabController.dispose();
@@ -143,7 +153,8 @@ class _GroupDetailsPageState extends State<GroupDetailsPage>
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                ExpenseBalancePage(groupId: widget.groupId),
+                                PremiumFeatureScreen(groupId: widget.groupId), //Funciones Premium
+                                // ExpenseBalancePage(groupId: widget.groupId), //Para evitar ver los anuncios descomenta esta linea y comenta la anterior
                           ),
                         );
                       },

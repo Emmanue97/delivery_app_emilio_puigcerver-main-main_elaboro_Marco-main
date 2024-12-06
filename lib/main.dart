@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/create_group_page.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 
 void main() async {
@@ -26,6 +27,17 @@ void main() async {
       child: const MyApp(),
     ),
   );
+  // Inicializar Unity Ads después de runApp
+  await UnityAds.init(
+    gameId: '5742820', // Reemplaza con tu Game ID
+    testMode: true, // Activar modo de prueba
+  );
+  UnityAds.load(
+      placementId: 'Rewarded_Android',
+      onComplete: (placementId) => print('Ad Loaded: $placementId'),
+      onFailed: (placementId, error, message) =>
+          print('Ad Failed to Load: $placementId, $error, $message'),
+    );
 }
 
 class MyApp extends StatelessWidget {

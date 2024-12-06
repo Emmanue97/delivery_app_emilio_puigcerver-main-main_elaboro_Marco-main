@@ -1,0 +1,21 @@
+{
+  "name": "delivery_app_emilio_puigcerver-main-main_elaboro_marco-main",
+  "version": "1.0.0",
+  "description": "A new Flutter project.",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "mercadopago": "^2.1.0",
+    "stripe": "^17.4.0"
+  }
+}

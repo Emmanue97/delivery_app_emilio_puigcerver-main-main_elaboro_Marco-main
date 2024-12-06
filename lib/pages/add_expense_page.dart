@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 class AddExpensePage extends StatefulWidget {
   final String groupId;
@@ -43,12 +44,19 @@ class _AddExpensePageState extends State<AddExpensePage> {
         'paid_by': _paidByMemberId,
         'created_at': FieldValue.serverTimestamp(),
       });
-
-      // Mostrar mensaje de éxito
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gasto agregado exitosamente')),
-      );
-
+      UnityAds.showVideoAd(
+          placementId: 'Rewarded_Android',
+          onStart: (placementId) => print('Ad Started: $placementId'),
+          onClick: (placementId) => print('Ad Clicked: $placementId'),
+          onSkipped: (placementId) => print('Ad Skipped: $placementId'),
+          onComplete: (placementId) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Gasto agregado exitosamente')),
+            ); // Solo navega después del anuncio
+          },
+          onFailed: (placementId, error, message) =>
+              print('Ad Failed: $placementId, $error, $message'),
+        );
       // Regresar a la pantalla anterior
       Navigator.pop(context);
     } catch (e) {

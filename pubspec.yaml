@@ -10,8 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    path_provider: ^2.1.1  # Usa la versión más reciente
-
+  path_provider: ^2.1.1  # Usa la versión más reciente
   # Dependencias actualizadas manualmente
   cupertino_icons: ^1.0.8 # Última versión estable y compatible
   provider: ^6.1.2        # Versión compatible con tu configuración
@@ -25,6 +24,7 @@ dependencies:
   shared_preferences: ^2.3.3
   fl_chart: ^0.69.0
   csv: ^6.0.0
+  unity_ads_plugin: ^0.3.22
 
 dev_dependencies:
   flutter_test:

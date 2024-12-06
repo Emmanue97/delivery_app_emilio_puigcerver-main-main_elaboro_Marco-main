@@ -3,7 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/create_group_page.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/GroupDetailsPage.dart'; // Pantalla de detalles del grupo
 import 'package:provider/provider.dart';
-import 'package:delivery_app_emilio_puigcerver/themes/theme_provider.dart'; // Importa el ThemeProvider
+import 'package:delivery_app_emilio_puigcerver/themes/theme_provider.dart'; 
+import 'package:unity_ads_plugin/unity_ads_plugin.dart'; // Importa el ThemeProvider
+
+// Importa la pantalla de suscripción premium
+import 'subscription_plans_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,6 +25,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Método para navegar a la pantalla de suscripción premium
+  void _goToSubscriptionPlans() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => SubscriptionPlansScreen()),
+    );
+  }
+
   // Método para convertir un color hexadecimal a un objeto Color
   Color _colorFromHex(String hexColor) {
     hexColor = hexColor.replaceAll('#', ''); // Eliminar el símbolo #
@@ -34,6 +46,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Control de Gastos'),
         actions: [
+          IconButton(
+            onPressed: _goToSubscriptionPlans,
+            icon: const Icon(Icons.diamond), // Ícono para suscripción premium
+            tooltip: 'Suscripción Premium',
+            color: Colors.blue,
+          ),
           // Switch para cambiar el tema
           Switch(
             value: Provider.of<ThemeProvider>(context).isDarkMode,
@@ -179,6 +197,18 @@ class _HomePageState extends State<HomePage> {
                   );
                 },
               ),
+            ),
+            // Espaciado antes del anuncio
+            const SizedBox(height: 20),
+            
+            // Anuncio banner de Unity Ads (ubicado al final)
+            UnityBannerAd(
+              placementId: 'Banner_Android', // Reemplaza con tu Placement ID
+              onLoad: (placementId) => print('Banner loaded: $placementId'),
+              onClick: (placementId) => print('Banner clicked: $placementId'),
+              onShown: (placementId) => print('Banner shown: $placementId'),
+              onFailed: (placementId, error, message) =>
+                  print('Banner Ad $placementId failed: $error $message'),
             ),
           ],
         ),
