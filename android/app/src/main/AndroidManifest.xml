@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.fooddelivery.app">
+    <!-- Agregar los permisos aquí, antes de <application> -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="delivery_app_emilio_puigcerver"
         android:name="${applicationName}"
