@@ -43,14 +43,16 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // Obtener los tokens de autenticación
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
       // Autenticación con Firebase usando los tokens de Google
-      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
       final user = userCredential.user;
 
       // Si el usuario se autentica con éxito
@@ -60,7 +62,8 @@ class _LoginPageState extends State<LoginPage> {
         String? subscriptionId = status?.userId;
 
         // Verificar si el usuario ya existe en la colección "usuarios"
-        DocumentSnapshot userDoc = await _firestore.collection('usuarios').doc(user.uid).get();
+        DocumentSnapshot userDoc =
+            await _firestore.collection('usuarios').doc(user.uid).get();
 
         if (!userDoc.exists) {
           // Registrar el usuario en la colección "usuarios"
@@ -82,7 +85,8 @@ class _LoginPageState extends State<LoginPage> {
         // Navegar a la página principal
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()), // Redirige a HomePage
+          MaterialPageRoute(
+              builder: (context) => const HomePage()), // Redirige a HomePage
         );
       }
     } catch (e) {
@@ -98,22 +102,52 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // Método para el inicio de sesión con correo y contraseña
+
   void login() async {
     final _authService = AuthService();
 
+    // Validación de campos vacíos
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
+      showDialog(
+        context: context,
+        builder: (context) => const AlertDialog(
+          title: Text('Campos vacíos'),
+          content: Text(
+              'Por favor, completa todos los campos antes de continuar.'),
+        ),
+      );
+      return; // Detiene la ejecución si los campos están vacíos
+    }
+
     try {
-      await _authService.signInWithEmailPassword(emailController.text, passwordController.text);
+      // Intento de inicio de sesión
+      await _authService.signInWithEmailPassword(
+        emailController.text.trim(), // Elimina espacios innecesarios
+        passwordController.text.trim(),
+      );
+
+      // Navegación a la página principal en caso de éxito
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()), // Redirige a HomePage
+        MaterialPageRoute(
+            builder: (context) => const HomePage()), // Redirige a HomePage
       );
     } catch (e) {
-      // Si ocurre un error en el inicio de sesión con correo y contraseña
+      // Manejo de errores en caso de credenciales incorrectas
+      String errorMessage;
+
+      if (e.toString().contains('invalid-credential')) {
+        errorMessage =
+            'El email o contraseña son incorrectas.';
+      } else {
+        errorMessage = 'Ocurrió un error inesperado. Intenta nuevamente.';
+      }
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Error'),
-          content: Text(e.toString()),
+          title: const Text('No se pudo iniciar sesión'),
+          content: Text(errorMessage),
         ),
       );
     }
@@ -184,7 +218,9 @@ class _LoginPageState extends State<LoginPage> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => RegisterPage(onTap: widget.onTap)),
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              RegisterPage(onTap: widget.onTap)),
                     );
                   },
                   child: Text(
