@@ -7,8 +7,7 @@ plugins {
 
 android {
     namespace = "com.fooddelivery.app"
-    // compileSdk = flutter.compileSdkVersion
-    compileSdk = 34
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -45,13 +44,6 @@ android {
             useLegacyPackaging = true
         }
     }
-
-    configurations.all {
-  resolutionStrategy {
-    force 'androidx.work:work-runtime:2.8.1'
-    force 'androidx.work:work-runtime-ktx:2.8.1'
-  }
-}
 
 }
 

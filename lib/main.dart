@@ -1,7 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:delivery_app_emilio_puigcerver/firebase_options.dart';
 import 'package:delivery_app_emilio_puigcerver/models/restaurant.dart';
-import 'package:delivery_app_emilio_puigcerver/pages/notification_service.dart';
 import 'package:delivery_app_emilio_puigcerver/providers/group_provider.dart';
 import 'package:delivery_app_emilio_puigcerver/themes/theme_provider.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/login_page.dart';
