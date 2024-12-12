@@ -7,6 +7,7 @@ import 'package:delivery_app_emilio_puigcerver/pages/register_page.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/home_page.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/onboarding_page.dart'; //  onboarding
 import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:delivery_app_emilio_puigcerver/pages/create_group_page.dart';
@@ -32,35 +33,35 @@ import 'package:unity_ads_plugin/unity_ads_plugin.dart';
 
 
 
-// // Configuración inicial de OneSignal
-// Future<void> _inicializarOneSignal() async {
-//   // Reemplaza "TU-APP-ID" con tu ID de OneSignal
-//   OneSignal.shared.setAppId("cfff0b1f-6268-454c-8218-7db471934533");
-// // Agregar esto después de setAppId
-//   OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+// Configuración inicial de OneSignal
+Future<void> _inicializarOneSignal() async {
+  // Reemplaza "TU-APP-ID" con tu ID de OneSignal
+  OneSignal.shared.setAppId("cfff0b1f-6268-454c-8218-7db471934533");
+// Agregar esto después de setAppId
+  OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
-// // También puedes obtener el ID del jugador para verificar
-//   final status = await OneSignal.shared.getDeviceState();
-//   final String? osUserID = status?.userId;
-//   print("OneSignal User ID: $osUserID");
+// También puedes obtener el ID del jugador para verificar
+  final status = await OneSignal.shared.getDeviceState();
+  final String? osUserID = status?.userId;
+  print("OneSignal User ID: $osUserID");
 
-//   // Habilitar notificaciones en el dispositivo
-//   await OneSignal.shared.promptUserForPushNotificationPermission();
+  // Habilitar notificaciones en el dispositivo
+  await OneSignal.shared.promptUserForPushNotificationPermission();
 
-//   // Manejar notificaciones recibidas
-//   OneSignal.shared.setNotificationWillShowInForegroundHandler(
-//       (OSNotificationReceivedEvent event) {
-//     // Personalizar el manejo de notificaciones en primer plano
-//     event.complete(event.notification);
-//   });
+  // Manejar notificaciones recibidas
+  OneSignal.shared.setNotificationWillShowInForegroundHandler(
+      (OSNotificationReceivedEvent event) {
+    // Personalizar el manejo de notificaciones en primer plano
+    event.complete(event.notification);
+  });
 
-//   // Manejar cuando el usuario toca una notificación
-//   OneSignal.shared
-//       .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-//     // Manejar la acción cuando se toca la notificación
-//     print("Notificación tocada: ${result.notification.title}");
-//   });
-// }
+  // Manejar cuando el usuario toca una notificación
+  OneSignal.shared
+      .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
+    // Manejar la acción cuando se toca la notificación
+    print("Notificación tocada: ${result.notification.title}");
+  });
+}
 
 // // Función para enviar notificaciones con OneSignal
 // Future<void> _enviarNotificacionOneSignal(
@@ -151,7 +152,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // // Inicializar OneSignal
-  // await _inicializarOneSignal();
+  await _inicializarOneSignal();
 
   // // Inicializar WorkManager
   // await Workmanager().initialize(callbackDispatcher, isInDebugMode: true);
@@ -187,7 +188,7 @@ void main() async {
 
   // Inicializar Unity Ads después de runApp
   await UnityAds.init(
-    gameId: '5742820', // Reemplaza con tu Game ID
+    gameId: '5742820', 
     testMode: true, // Activar modo de prueba
   );
 
